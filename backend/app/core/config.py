@@ -1,6 +1,6 @@
 
 from typing import List
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Kiss & Shhhh Backend"
@@ -13,14 +13,13 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = "kiss_shhhh"
     POSTGRES_PORT: int = 5432
 
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
 
-    # CORS Origins - allow all for MVP, restrict in prod (to "https://kissandshhhh.com")
+    # CORS Origins
     BACKEND_CORS_ORIGINS: List[str] = ["*"]
-
-    class Config:
-        case_sensitive = True
 
 settings = Settings()

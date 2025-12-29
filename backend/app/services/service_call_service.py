@@ -1,27 +1,36 @@
-
-import uuid
 import logging
-from app.db.repository import db
+import uuid
 from app.schemas.service import ServiceCallCreate, ServiceCallResponse, ServiceCallData
+from app.models.service_call import ServiceCall, ServiceType
+from app.repositories.service_call_repository import ServiceCallRepository
 
 logger = logging.getLogger(__name__)
 
 class ServiceCallService:
-    @staticmethod
-    async def create_service_call(call_in: ServiceCallCreate) -> ServiceCallResponse:
-        # Generate Call ID
-        call_id = str(uuid.uuid4())
-        
+    def __init__(self, service_repo: ServiceCallRepository):
+        self.service_repo = service_repo
+
+    async def create_service_call(self, call_in: ServiceCallCreate) -> ServiceCallResponse:
         logger.info(f"Service Call: {call_in.serviceType} for Table {call_in.tableId}")
         
-        # Store in DB
-        call_data_dict = call_in.model_dump()
-        call_data_dict["callId"] = call_id
+        # Map string serviceType to Enum if necessary, or let Pydantic handle validation?
+        # Assuming Pydantic validates string to match Enum values or we cast it.
+        # But ServiceType is an Enum in SQLAlchemy model.
         
-        await db.add_service_call(call_data_dict)
+        service_call = ServiceCall(
+            table_id=call_in.tableId,
+            service_type=ServiceType(call_in.serviceType)
+        )
+        
+        created_call = await self.service_repo.create(service_call)
         
         return ServiceCallResponse(
             status="success",
             message="Service dispatched",
-            data=ServiceCallData(callId=call_id, **call_in.model_dump())
+            data=ServiceCallData(
+                callId=str(created_call.id),
+                tableId=created_call.table_id,
+                serviceType=created_call.service_type.value,
+                timestamp=created_call.created_at.isoformat() if created_call.created_at else None
+            )
         )
