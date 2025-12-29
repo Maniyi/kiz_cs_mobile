@@ -1,7 +1,7 @@
 
 import uuid
 import logging
-from app.db.memory import db
+from app.db.repository import db
 from app.schemas.order import OrderCreate, OrderResponse, OrderData
 
 logger = logging.getLogger(__name__)
