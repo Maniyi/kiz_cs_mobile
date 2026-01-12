@@ -1,14 +1,3 @@
-# Make sure you're in the project root
-cd ~/path/to/Kiz_QR_Mobile
-
-# Create the .gitignore file
-touch .gitignore
-```
-
-### Step 2: Add comprehensive ignore rules
-Open the `.gitignore` file and add:
-```
-# Python
 __pycache__/
 *.py[cod]
 *$py.class
